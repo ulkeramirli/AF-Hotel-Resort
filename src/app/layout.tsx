@@ -7,18 +7,18 @@ import Footer from "@/components/Footer";
 import FloatingActions from "@/components/FloatingActions";
 
 const cormorant = Cormorant_Garamond({ 
-  subsets: ["latin", "cyrillic"], 
+  subsets: ["latin", "cyrillic", "latin-ext"], 
   weight: ["300", "400", "500", "600", "700"],
   variable: '--font-cormorant'
 });
 
 const montserrat = Montserrat({ 
-  subsets: ["latin", "cyrillic"], 
+  subsets: ["latin", "cyrillic", "latin-ext"], 
   variable: '--font-montserrat'
 });
 
 const greatVibes = Great_Vibes({ 
-  subsets: ["latin"], 
+  subsets: ["latin", "latin-ext"], 
   weight: ["400"],
   variable: '--font-great-vibes'
 });
