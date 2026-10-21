@@ -134,7 +134,7 @@ export default function Wonderland() {
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#ff6c02]"></span>
                   </span>
                   <span className="text-[11px] sm:text-[12px] font-extrabold uppercase tracking-[0.2em] text-[#ff6c02]">
-                    {l === 'az' ? 'Tezliklə açılacaq' : l === 'ru' ? 'Скоро откроется' : 'Opening Soon'}
+                    {l === 'az' ? 'Açıldı' : l === 'ru' ? 'Открылся' : 'Opened'}
                   </span>
                 </div>
               </div>

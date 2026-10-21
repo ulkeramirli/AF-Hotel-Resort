@@ -202,6 +202,30 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Developer credits */}
+        <div className="pb-4 pt-1 border-t border-stone-200/50 flex justify-center items-center text-[11px] text-stone-400 font-light tracking-wide">
+          <p>
+            Site by{' '}
+            <a
+              href="https://www.linkedin.com/in/ulker-amirli-099087320/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-stone-600 hover:text-[#00b5d5] transition-colors underline decoration-stone-300 underline-offset-2 hover:decoration-[#00b5d5]"
+            >
+              Ulker Amirli
+            </a>{' '}
+            and{' '}
+            <a
+              href="https://www.linkedin.com/in/ali-asadzade-185010335/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-stone-600 hover:text-[#00b5d5] transition-colors underline decoration-stone-300 underline-offset-2 hover:decoration-[#00b5d5]"
+            >
+              Ali Asadzade
+            </a>
+          </p>
+        </div>
+
       </div>
     </footer>
   );

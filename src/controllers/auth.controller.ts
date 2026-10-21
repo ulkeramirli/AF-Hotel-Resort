@@ -66,6 +66,26 @@ export class AuthController {
       );
     }
   }
+  static async verifyLogin2FA(req: Request) {
+    try {
+      const { email, otp } = await req.json();
+      const result = await AuthService.verifyLogin2FA(email, otp);
+      return NextResponse.json({
+        success: true,
+        data: result,
+      });
+    } catch (error: any) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: error.message,
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+  }
   static async forgotPassword(req: Request) {
     try {
       const { email } = await req.json();

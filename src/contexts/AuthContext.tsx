@@ -12,6 +12,7 @@ import {
   register,
   loginWithGoogle,
   logout as apiLogout,
+  verifyLogin2FA,
 } from "@/services/api";
 
 interface User {
@@ -27,6 +28,10 @@ interface AuthContextType {
   signIn: (
     email: string,
     password: string,
+  ) => Promise<{ ok: boolean; message?: string; redirect?: string; requiresTwoFactor?: boolean }>;
+  verify2FA: (
+    email: string,
+    otp: string,
   ) => Promise<{ ok: boolean; message?: string; redirect?: string }>;
   signUp: (
     name: string,
@@ -66,11 +71,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = useCallback(async (email: string, password: string) => {
     const res = await login(email, password);
     if (res.success && res.data) {
+      if (res.data.requiresTwoFactor) {
+        return { ok: true, requiresTwoFactor: true };
+      }
       setUser(res.data.user as User);
       const redirect = res.data.user.role === "admin" ? "/admin" : "/account";
       return { ok: true, redirect };
     }
     return { ok: false, message: res.message ?? "Xəta baş verdi" };
+  }, []);
+
+  const verify2FA = useCallback(async (email: string, otp: string) => {
+    const res = await verifyLogin2FA(email, otp);
+    if (res.success && res.data) {
+      setUser(res.data.user as User);
+      const redirect = res.data.user.role === "admin" ? "/admin" : "/account";
+      return { ok: true, redirect };
+    }
+    return { ok: false, message: res.message ?? "Yanlış kod" };
   }, []);
 
   const signUp = useCallback(
@@ -104,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, signIn, signUp, signInGoogle, signOut }}
+      value={{ user, loading, signIn, verify2FA, signUp, signInGoogle, signOut }}
     >
       {children}
     </AuthContext.Provider>

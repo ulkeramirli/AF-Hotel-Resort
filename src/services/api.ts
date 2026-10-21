@@ -71,7 +71,20 @@ export async function login(email: string, password: string) {
     body: JSON.stringify({ email, password }),
   });
   const data = await safeJson(res);
-  if (data.success) {
+  if (data.success && data.data.token) {
+    setToken(data.data.token);
+  }
+  return data;
+}
+
+export async function verifyLogin2FA(email: string, otp: string) {
+  const res = await fetch(`${BASE}/login/verify-2fa`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, otp }),
+  });
+  const data = await safeJson(res);
+  if (data.success && data.data.token) {
     setToken(data.data.token);
   }
   return data;

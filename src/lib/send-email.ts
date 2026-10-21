@@ -18,11 +18,32 @@ export async function sendMail(to: string, subject: string, html: string) {
     return;
   }
 
-  await transporter.sendMail({
-    from: `"AF Hotel & Aqua Park" <${process.env.MAIL_USER}>`,
-    to,
-    subject,
-    html,
-  });
-}
+  try {
+    await transporter.sendMail({
+      from: `"AF Hotel & Aqua Park" <${process.env.MAIL_USER}>`,
+      to,
+      subject,
+      html,
+    });
+  } catch (error: any) {
+    console.error("❌ Email göndərilərkən xəta baş verdi:", error.message);
+    
+    // Fallback to console in development so the developer isn't blocked
+    if (process.env.NODE_ENV === "development") {
+      const otpMatch = html.match(/\b(\d{6})\b/);
+      const otp = otpMatch ? otpMatch[1] : "N/A";
+      console.log("\n\n");
+      console.log("╔══════════════════════════════════════════════════════╗");
+      console.log("║    ⚠️ MOCK EMAIL (SMTP AUTH FAILED - Check .env)     ║");
+      console.log("╠══════════════════════════════════════════════════════╣");
+      console.log(`║  TO:      ${to.padEnd(43)}║`);
+      console.log(`║  OTP CODE: ${String(otp).padEnd(42)}║`);
+      console.log("╚══════════════════════════════════════════════════════╝\n");
+      // Don't throw, let the flow continue so they can use the OTP from terminal
+    } else {
+      throw error;
+    }
+  }
 
+
+}

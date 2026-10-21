@@ -23,7 +23,7 @@ export default function Contacts() {
 
   const handleSend = async (e: FormEvent) => {
     e.preventDefault();
-    if (!captchaValue) {
+    if (!captchaValue && process.env.NODE_ENV === 'production') {
       setError('Zəhmət olmasa robot olmadığınızı təsdiqləyin');
       return;
     }
@@ -122,12 +122,14 @@ export default function Contacts() {
                 </div>
               </div>
 
-              <div className="flex justify-center mt-4">
-                <ReCAPTCHA
-                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"}
-                  onChange={(val) => setCaptchaValue(val)}
-                />
-              </div>
+              {process.env.NODE_ENV === 'production' && (
+                <div className="flex justify-center mt-4">
+                  <ReCAPTCHA
+                    sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"}
+                    onChange={(val) => setCaptchaValue(val)}
+                  />
+                </div>
+              )}
 
               {error && (
                 <p className="text-xs text-rose-500 font-medium">{error}</p>

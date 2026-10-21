@@ -58,6 +58,60 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new Error("Invalid email or password");
     }
+
+    if (user.role === "admin") {
+      const otp = generateOtp();
+      user.otp = otp;
+      user.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+      await user.save();
+      
+      const mail = verifyEmailTemplate(user.name, otp);
+      await sendMail(user.email, "Admin 2FA Code - AF Hotel", mail.html);
+      
+      return {
+        requiresTwoFactor: true,
+        email: user.email,
+      };
+    }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET!,
+      {
+        expiresIn: "7d",
+      },
+    );
+    return {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      token,
+    };
+  }
+
+  static async verifyLogin2FA(email: string, otp: string) {
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    if (user.otp !== otp) {
+      throw new Error("Invalid OTP");
+    }
+    if (!user.otpExpires || user.otpExpires < new Date()) {
+      throw new Error("OTP expired");
+    }
+    
+    user.otp = null;
+    user.otpExpires = null;
+    await user.save();
+
     const token = jwt.sign(
       {
         id: user._id,

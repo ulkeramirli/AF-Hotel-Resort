@@ -112,6 +112,11 @@ function SignInContent() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  
+  // 2FA state
+  const [step, setStep] = useState<"login" | "2fa">("login");
+  const [otp, setOtp] = useState("");
+  const { verify2FA } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,6 +126,11 @@ function SignInContent() {
     try {
       const res = await signIn(trimmedEmail, password);
       if (res && res.ok) {
+        if (res.requiresTwoFactor) {
+          setStep("2fa");
+          setLoading(false);
+          return;
+        }
         router.push(res.redirect ?? "/account");
       } else {
         let errorText = res?.message;
@@ -134,6 +144,24 @@ function SignInContent() {
       }
     } catch {
       setError(t.errorAuth);
+      setLoading(false);
+    }
+  };
+
+  const handle2FASubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const res = await verify2FA(email.trim(), otp);
+      if (res && res.ok) {
+        router.push(res.redirect ?? "/admin");
+      } else {
+        setError(res?.message || "Yanlış kod");
+        setLoading(false);
+      }
+    } catch {
+      setError("Yanlış kod");
       setLoading(false);
     }
   };
@@ -258,55 +286,96 @@ function SignInContent() {
 
 
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-stone-500 uppercase tracking-wide">{t.emailLabel}</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="email@example.com"
-                className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-[#00b5d5] focus:bg-white focus:ring-2 focus:ring-[#00b5d5]/10 transition-all"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-bold text-stone-500 uppercase tracking-wide">{t.passwordLabel}</label>
-                <Link href={`/auth/forgot-password?email=${encodeURIComponent(email)}`} className="text-xs font-semibold hover:underline" style={{ color: "#00b5d5" }}>
-                  {t.forgotPass}
-                </Link>
-              </div>
-              <div className="relative">
+          {step === "login" ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-stone-500 uppercase tracking-wide">{t.emailLabel}</label>
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type="email"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full px-4 py-3 pr-11 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-[#00b5d5] focus:bg-white focus:ring-2 focus:ring-[#00b5d5]/10 transition-all"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="email@example.com"
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-[#00b5d5] focus:bg-white focus:ring-2 focus:ring-[#00b5d5]/10 transition-all"
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-600 transition-colors cursor-pointer">
-                  {showPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                </button>
               </div>
-            </div>
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-bold text-stone-500 uppercase tracking-wide">{t.passwordLabel}</label>
+                  <Link href={`/auth/forgot-password?email=${encodeURIComponent(email)}`} className="text-xs font-semibold hover:underline" style={{ color: "#00b5d5" }}>
+                    {t.forgotPass}
+                  </Link>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full px-4 py-3 pr-11 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-[#00b5d5] focus:bg-white focus:ring-2 focus:ring-[#00b5d5]/10 transition-all"
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-600 transition-colors cursor-pointer">
+                    {showPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
 
-            <button
-              type="submit"
-              disabled={loading || googleLoading}
-              className="w-full py-3 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60 cursor-pointer"
-              style={{ background: "linear-gradient(135deg, #00b5d5, #00406a)" }}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  {t.checking}
-                </>
-              ) : t.signInBtn}
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={loading || googleLoading}
+                className="w-full py-3 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60 cursor-pointer"
+                style={{ background: "linear-gradient(135deg, #00b5d5, #00406a)" }}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    {t.checking}
+                  </>
+                ) : t.signInBtn}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handle2FASubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-stone-500 uppercase tracking-wide">6-Rəqəmli Kod (OTP)</label>
+                <p className="text-xs text-stone-500 mb-2">
+                  Email ünvanınıza göndərilən 6 rəqəmli təsdiq kodunu daxil edin.
+                </p>
+                <input
+                  type="text"
+                  required
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                  placeholder="123456"
+                  className="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm tracking-[0.5em] text-center font-bold focus:outline-none focus:border-[#00b5d5] focus:bg-white focus:ring-2 focus:ring-[#00b5d5]/10 transition-all"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || otp.length !== 6}
+                className="w-full py-3 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-60 cursor-pointer"
+                style={{ background: "linear-gradient(135deg, #00b5d5, #00406a)" }}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Yoxlanılır...
+                  </>
+                ) : "Təsdiqlə"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setStep("login")}
+                className="w-full py-2 text-sm text-stone-500 hover:text-stone-700 font-semibold"
+              >
+                Geri qayıt
+              </button>
+            </form>
+          )}
 
           <p className="text-center text-sm text-stone-500">
             {t.noAccount}{" "}
