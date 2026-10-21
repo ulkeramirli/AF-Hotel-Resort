@@ -40,6 +40,9 @@ export default function MagneticButton({ children, className = '', onClick, magn
     y.set(0);
   };
 
+  const hasDisplayClass = /(^|\s)(inline-block|block|inline|flex|inline-flex|grid)(\s|$)/.test(className);
+  const displayClass = hasDisplayClass ? '' : 'inline-block ';
+
   return (
     <motion.div
       ref={ref}
@@ -51,7 +54,7 @@ export default function MagneticButton({ children, className = '', onClick, magn
         y: mouseYSpring,
       }}
       whileTap={{ scale: 0.95 }}
-      className={`relative inline-block ${className}`}
+      className={`relative ${displayClass}${className}`.trim()}
     >
       {children}
     </motion.div>
