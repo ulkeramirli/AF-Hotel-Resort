@@ -238,7 +238,7 @@ function SignInContent() {
 
         {/* Контент слева снизу */}
         <div className="relative z-10 flex flex-col justify-end p-12 text-white h-full">
-          <h2 className="text-4xl font-bold mb-3 leading-tight whitespace-pre-line">
+          <h2 className="text-4xl font-bold mb-3 leading-tight whitespace-pre-line text-white">
             {t.heroTitle}
           </h2>
           <p className="text-white/70 text-sm leading-relaxed max-w-xs">
