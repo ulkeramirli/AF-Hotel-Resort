@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Clock, Phone, ChefHat, Utensils, Coffee, Wine, Calendar, Search, Loader2 } from "lucide-react";
+import { Sparkles, Clock, Phone, ChefHat, Utensils, Coffee, Wine, Calendar, Search, Loader2 , ExternalLink} from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import CategoryTabs from "./CategoryTabs";
@@ -40,6 +40,11 @@ interface LanguageLabels {
   noResults: string;
   loading: string;
   noRestaurants: string;
+  moreInfo: string;
+  onlineMenu: string;
+  menuShowcaseTitle: string;
+  menuShowcaseDesc: string;
+  menuShowcaseBtn: string;
 }
 
 const labels: Record<LangType, LanguageLabels> = {
@@ -58,6 +63,11 @@ const labels: Record<LangType, LanguageLabels> = {
     noResults: "Təam tapılmadı.",
     loading: "Yüklənir...",
     noRestaurants: "Restoran tapılmadı.",
+    moreInfo: "Ətraflı məlumat",
+    onlineMenu: "Onlayn Menyu",
+    menuShowcaseTitle: "Onlayn Menyu",
+    menuShowcaseDesc: "Menyu və qiymətlərlə tanış olmaq üçün keçid edin.",
+    menuShowcaseBtn: "Menyuya bax",
   },
   ru: {
     tag: "",
@@ -74,6 +84,11 @@ const labels: Record<LangType, LanguageLabels> = {
     noResults: "Блюдо не найдено.",
     loading: "Загрузка...",
     noRestaurants: "Ресторан не найден.",
+    moreInfo: "Подробнее",
+    onlineMenu: "Онлайн меню",
+    menuShowcaseTitle: "Меню ресторана",
+    menuShowcaseDesc: "Чтобы посмотреть блюда и цены, перейдите в онлайн-меню.",
+    menuShowcaseBtn: "Открыть меню",
   },
   en: {
     tag: "",
@@ -90,6 +105,11 @@ const labels: Record<LangType, LanguageLabels> = {
     noResults: "Dish not found.",
     loading: "Loading...",
     noRestaurants: "No restaurants found.",
+    moreInfo: "More details",
+    onlineMenu: "Online Menu",
+    menuShowcaseTitle: "Restaurant Menu",
+    menuShowcaseDesc: "View our full menu and prices online.",
+    menuShowcaseBtn: "Open Menu",
   },
 };
 
@@ -103,8 +123,6 @@ export default function Restoran() {
   const [settings, setSettings] = useState<RestaurantSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeRest, setActiveRest] = useState<number>(0);
-  const [activeMenuTab, setActiveMenuTab] = useState<number>(0);
-  const [searchQuery, setSearchQuery] = useState<string>("");
   const [rates, setRates] = useState<{ usd: number; eur: number } | null>(null);
 
   const formatPrice = (priceAzn: number) => {
@@ -138,12 +156,9 @@ export default function Restoran() {
   }, [l]);
 
   const currentRestaurant = restaurants[activeRest] || restaurants[0];
-  const activeMenu = currentRestaurant?.menu?.[activeMenuTab] || currentRestaurant?.menu?.[0];
 
   const handleRestaurantChange = (index: number) => {
     setActiveRest(index);
-    setActiveMenuTab(0);
-    setSearchQuery("");
   };
 
   const loc = (obj: any) => {
@@ -151,13 +166,6 @@ export default function Restoran() {
     if (typeof obj === "string") return obj;
     return obj[l] || obj.az || "";
   };
-
-  const filteredItems = activeMenu?.items?.filter((item: ApiMenuItem) => {
-    const itemName = typeof item.name === 'object' ? ((item.name as any)[l] || (item.name as any).az || "") : (item.name || "");
-    const itemDesc = typeof item.description === 'object' ? ((item.description as any)[l] || (item.description as any).az || "") : (item.description || "");
-    return itemName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           itemDesc.toLowerCase().includes(searchQuery.toLowerCase());
-  }) || [];
 
   // İş saatları schedule array olaraq formatla
   const getSchedule = () => {
@@ -344,112 +352,40 @@ export default function Restoran() {
             </div>
           </ScrollReveal>
 
-          {/* Sağ hissə: Menyu */}
-          <ScrollReveal direction="right" delay={0.4} className="lg:col-span-7 space-y-6">
-            {currentRestaurant.menu && currentRestaurant.menu.length > 0 ? (
-              <>
-                <div className="flex flex-col gap-3 border-b border-stone-200/60 pb-3">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <h3 className="text-base font-serif font-medium text-[#1e325c] tracking-wide flex items-center gap-1.5 shrink-0">
-                      <Utensils className="w-3.5 h-3.5 text-[#00b5d5]" />
-                      {c.viewMenu}
+          {/* Sağ hissə: Onlayn Menyu Təqdimatı */}
+          <ScrollReveal direction="right" delay={0.4} className="lg:col-span-7">
+            <div className="bg-white rounded-4xl p-6 sm:p-8 md:p-10 border border-stone-100 shadow-sm relative overflow-hidden flex flex-col justify-between group">
+              <div className="absolute top-0 right-0 w-72 h-72 bg-[#00b5d5]/5 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center gap-3 pb-3 border-b border-stone-100">
+                  <div className="w-10 h-10 rounded-xl bg-sky-50 text-[#00b5d5] flex items-center justify-center shrink-0">
+                    <Utensils className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-serif text-xl sm:text-2xl text-[#1e325c] font-medium">
+                      {c.menuShowcaseTitle}
                     </h3>
-
-                    <div className="relative w-full sm:w-36 shrink-0">
-                      <Search className="w-3 h-3 text-stone-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        placeholder={c.searchPlaceholder}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-stone-100/80 border border-transparent rounded-lg pl-7 pr-2.5 py-1 text-[11px] text-stone-700 outline-none focus:border-[#00b5d5] focus:bg-white transition-all font-medium"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-1 w-full">
-                    {currentRestaurant.menu.map((cat: ApiMenuCategory, idx: number) => {
-                      const rawCatName = loc(cat.name);
-                      const catName = rawCatName ? rawCatName.charAt(0).toUpperCase() + rawCatName.slice(1).toLowerCase() : "";
-                      const Icon = getCategoryIcon(typeof cat.name === 'string' ? cat.name : rawCatName);
-                      const isActive = activeMenuTab === idx;
-                      return (
-                        <button
-                          key={cat._id || idx}
-                          onClick={() => { setActiveMenuTab(idx); setSearchQuery(""); }}
-                          className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all border-none cursor-pointer ${
-                            isActive
-                              ? "bg-[#00b5d5] text-white shadow-xs"
-                              : "bg-stone-100 text-stone-500 hover:bg-stone-200/70"
-                          }`}
-                        >
-                          <Icon className={`w-3 h-3 shrink-0 ${isActive ? "text-white" : "text-stone-400"}`} />
-                          <span>{catName}</span>
-                        </button>
-                      );
-                    })}
                   </div>
                 </div>
 
-                {/* Yeməklər */}
-                <div className="space-y-3.5">
-                  {filteredItems.length > 0 ? (
-                    <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <AnimatePresence mode="popLayout">
-                        {filteredItems.map((item: ApiMenuItem, i: number) => (
-                          <motion.div
-                            layout
-                            key={item._id || (typeof item.name === 'string' ? item.name : (item.name as any)?.az)}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 0.25, delay: i * 0.05 }}
-                          >
-                            <TiltCard tiltAmount={3}>
-                            <div className="bg-white p-3.5 rounded-2xl border border-stone-100/80 shadow-2xs hover:shadow-md hover:border-stone-200/60 transition-all duration-300 flex justify-between items-center gap-4 min-h-27.5">
-                            <div className="space-y-1.5 flex-1">
-                              <div className="flex flex-col gap-0.5">
-                                <h4 className="font-semibold text-xs md:text-sm text-[#1e325c] leading-snug">
-                                  {loc(item.name)}
-                                </h4>
-                                <span className="text-xs font-semibold text-[#00b5d5] font-mono mt-0.5">
-                                  {formatPrice(item.price)}
-                                </span>
-                              </div>
-                              <div className="text-[11px] text-stone-400 font-medium leading-normal line-clamp-2 md:line-clamp-3 prose prose-sm prose-stone [&>p]:mb-0" dangerouslySetInnerHTML={{ __html: loc(item.description) }} />
-                            </div>
-
-                                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden shrink-0 shadow-2xs bg-stone-50 flex items-center justify-center border border-stone-100/50">
-                                  {item.image ? (
-                                    <Image
-                                      src={item.image}
-                                      alt={loc(item.name)}
-                                      fill
-                                      sizes="(max-width: 640px) 80px, 96px"
-                                      className="object-cover transition-transform duration-500 hover:scale-105"
-                                    />
-                                  ) : (
-                                    <Utensils className="w-6 h-6 text-stone-300/60" />
-                                  )}
-                                </div>
-                            </div>
-                            </TiltCard>
-                          </motion.div>
-                        ))}
-                      </AnimatePresence>
-                    </motion.div>
-                  ) : (
-                    <div className="text-center py-16 text-stone-400 text-xs font-medium">
-                      {c.noResults}
-                    </div>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="text-center py-16 text-stone-400 text-sm">
-                {c.noResults}
+                <p className="text-stone-500 text-sm sm:text-base leading-relaxed">
+                  {c.menuShowcaseDesc}
+                </p>
               </div>
-            )}
+
+              <div className="relative z-10 pt-6">
+                <a
+                  href="https://menu.afhotel.az/#"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#1e325c] hover:bg-[#00b5d5] text-white text-xs sm:text-sm font-semibold transition-all duration-300 shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] group/btn cursor-pointer"
+                >
+                  <span>{c.menuShowcaseBtn}</span>
+                  <ExternalLink className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
+                </a>
+              </div>
+            </div>
           </ScrollReveal>
 
         </div>

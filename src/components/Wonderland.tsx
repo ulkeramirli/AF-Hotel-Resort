@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { Sparkles, Clock, Ticket, ArrowRight, ArrowLeft, Wand2 } from "lucide-react";
+import { Sparkles, Clock, Ticket, ArrowRight, ArrowLeft, Wand2 , ExternalLink} from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import useEmblaCarousel from "embla-carousel-react";
 import CategoryTabs from "./CategoryTabs";
@@ -15,9 +15,24 @@ import DynamicIcon from "./DynamicIcon";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
 const content = {
-  az: { highlightsTitle: "Parkın Möhtəşəm Attrksionları", tickets: "Bilet Qiymətləri" },
-  en: { highlightsTitle: "Grand Attractions of the Park", tickets: "Ticket Prices" },
-  ru: { highlightsTitle: "Главные достопримечательности парка", tickets: "Стоимость билетов" },
+  az: {
+    highlightsTitle: "Parkın Möhtəşəm Attrksionları",
+    tickets: "Bilet Qiymətləri",
+    ticketNoticeDesc: "Attraksionlar və bilet qiymətləri ilə tanış olmaq üçün keçid edin.",
+    ticketNoticeBtn: "Qiymətlərə bax",
+  },
+  en: {
+    highlightsTitle: "Grand Attractions of the Park",
+    tickets: "Ticket Prices",
+    ticketNoticeDesc: "View attraction and ticket prices online.",
+    ticketNoticeBtn: "View Prices",
+  },
+  ru: {
+    highlightsTitle: "Главные достопримечательности парка",
+    tickets: "Стоимость билетов",
+    ticketNoticeDesc: "Чтобы посмотреть цены на аттракционы и билеты, перейдите по ссылке.",
+    ticketNoticeBtn: "Смотреть цены",
+  },
 };
 
 export default function Wonderland() {
@@ -301,35 +316,37 @@ export default function Wonderland() {
 
         {/* Tickets & Info Area */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-          {/* Tickets */}
-          <ScrollReveal type="slideRight" delay={0.3} className="xl:col-span-7 bg-white border border-stone-100 rounded-4xl p-5 md:p-6 relative overflow-hidden group shadow-sm">
-            <div className="absolute top-0 right-0 w-80 h-80 bg-stone-50 rounded-full blur-3xl group-hover:bg-[#00b5d5]/5 transition-colors duration-1000" />
+          {/* Tickets & Pricing Card */}
+          <ScrollReveal type="slideRight" delay={0.3} className="xl:col-span-7 bg-white border border-stone-100 rounded-4xl p-6 sm:p-8 relative overflow-hidden group shadow-sm flex flex-col justify-between">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#00b5d5]/5 rounded-full blur-3xl pointer-events-none" />
             
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 relative z-10 border-b border-stone-100 pb-4">
-              <h3 className="font-serif text-xl md:text-2xl text-[#1e325c] flex items-center gap-2.5 font-medium">
-                <Ticket className="w-5 h-5 text-[#ff6c02]" />
-                {c.tickets}
-              </h3>
-            </div>
-            
-            <div className="flex flex-col gap-3 relative z-10">
-              {wonderland?.tickets?.map((ticket: any) => (
-                <div key={ticket._id} className="relative bg-stone-50/50 rounded-xl border border-stone-200 hover:border-[#00b5d5]/50 transition-all duration-300 hover:shadow-sm overflow-hidden group/ticket flex flex-col justify-center min-h-12.5">
-                  
-                  {/* Perforations for real ticket look */}
-                  <div className="absolute top-1/2 -left-2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-r border-stone-200 group-hover/ticket:border-[#00b5d5]/50 transition-colors" />
-                  <div className="absolute top-1/2 -right-2 -translate-y-1/2 w-4 h-4 bg-white rounded-full border-l border-stone-200 group-hover/ticket:border-[#00b5d5]/50 transition-colors" />
-                  
-                  <div className="flex justify-between items-center px-4 py-2 border-l-2 border-dashed border-stone-200 group-hover/ticket:border-[#ff6c02]/40 ml-3 transition-colors">
-                    <span className="text-sm font-medium text-stone-700 pr-4">
-                      {typeof ticket.name === 'object' ? (ticket.name[l] || ticket.name.az || "Ticket") : (ticket.name || "Ticket")}
-                    </span>
-                    <span className="text-sm md:text-base font-bold text-[#ff6c02] whitespace-nowrap">
-                      {formatPriceString(ticket.price)}
-                    </span>
-                  </div>
+            <div className="relative z-10 space-y-4">
+              <div className="flex items-center gap-3 pb-3 border-b border-stone-100">
+                <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#ff6c02] flex items-center justify-center shrink-0">
+                  <Ticket className="w-5 h-5" />
                 </div>
-              ))}
+                <div>
+                  <h3 className="font-serif text-xl sm:text-2xl text-[#1e325c] font-medium">
+                    {c.tickets}
+                  </h3>
+                </div>
+              </div>
+
+              <p className="text-stone-500 text-sm sm:text-base leading-relaxed">
+                {c.ticketNoticeDesc}
+              </p>
+            </div>
+
+            <div className="relative z-10 pt-6">
+              <a
+                href="https://menu.afhotel.az/#"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#1e325c] hover:bg-[#00b5d5] text-white text-xs sm:text-sm font-semibold transition-all duration-300 shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] group/btn cursor-pointer"
+              >
+                <span>{c.ticketNoticeBtn}</span>
+                <ExternalLink className="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform" />
+              </a>
             </div>
           </ScrollReveal>
 
