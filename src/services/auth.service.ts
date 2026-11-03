@@ -59,20 +59,6 @@ export class AuthService {
       throw new Error("Invalid email or password");
     }
 
-    if (user.role === "admin") {
-      const otp = generateOtp();
-      user.otp = otp;
-      user.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-      await user.save();
-      
-      const mail = verifyEmailTemplate(user.name, otp);
-      await sendMail(user.email, "Admin 2FA Code - AF Hotel", mail.html);
-      
-      return {
-        requiresTwoFactor: true,
-        email: user.email,
-      };
-    }
 
     const token = jwt.sign(
       {
